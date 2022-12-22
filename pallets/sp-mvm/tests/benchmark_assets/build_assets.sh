@@ -3,7 +3,7 @@ rm -rf ./move-stdlib
 git clone https://github.com/pontem-network/move-stdlib ./move-stdlib
 pushd ./move-stdlib
 git checkout release-v1.0.0
-dove build -b
+dove build
 popd
 
 # Clone pont-stdlib
@@ -11,7 +11,7 @@ rm -rf ./pont-stdlib
 git clone https://github.com/pontem-network/pont-stdlib.git ./pont-stdlib
 pushd ./pont-stdlib
 git checkout release-v1.0.0
-dove build -b
+dove build
 popd
 
 dove clean

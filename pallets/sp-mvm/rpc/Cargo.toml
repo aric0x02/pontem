@@ -24,5 +24,5 @@ serde = { version = "1.0", features = [ "derive" ] }
 fc-rpc-core = { version = "1.0.0" }
 
 [dependencies.move-core-types]
-git = "https://github.com/pontem-network/sp-move-vm.git"
-rev = "c922f60b747bfba0d0f01ab77bd3091d3e43454c"
+path="../../../../sp-move-vm/language/move-core/types"
+

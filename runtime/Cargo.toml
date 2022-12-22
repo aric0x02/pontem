@@ -104,13 +104,12 @@ sp-io = { default-features = false, git = 'https://github.com/paritytech/substra
 assets = { path = '../assets', default-features = false }
 env_logger = "0.9.0"
 test-log = "0.2.8"
-move-core-types = { git = "https://github.com/pontem-network/sp-move-vm.git", rev = "c922f60b747bfba0d0f01ab77bd3091d3e43454c", default-features = false }
+move-core-types = { path="../../sp-move-vm/language/move-core/types",  default-features = false }
 bcs = { package = "bcs", version = "0.1" }
 
 [dependencies.move-vm]
 package = "mvm"
-git = "https://github.com/pontem-network/sp-move-vm.git"
-rev = "c922f60b747bfba0d0f01ab77bd3091d3e43454c"
+path="../../sp-move-vm/mvm"
 default-features = false
 features = [ "move_stdlib" ]
 

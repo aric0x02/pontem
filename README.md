@@ -257,6 +257,7 @@ Add `--dev-service` flag to `cargo run` command to run a single node with disabl
 
 ```sh
 ./target/release/pontem --dev --dev-service --tmp
+./target/debug/pontem --dev --dev-service --tmp
 ```
 
 Use `--sealing` argument to select sealing mode:
