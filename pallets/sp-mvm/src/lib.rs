@@ -435,7 +435,7 @@ pub mod pallet {
 
                 transaction
                     .into_script(signers)
-                    .map_err(|_| Error::<T>::TransactionValidationError)?
+                    .map_err(|_| Error::<T>::TransactionValidationError2)?
             };
 
             let ctx = {
@@ -616,6 +616,7 @@ pub mod pallet {
         ScriptValidationError,
         /// Transaction deserialization & validation error
         TransactionValidationError,
+        TransactionValidationError2,
         /// Transaction signers num isn't eq signers
         TransactionSignersNumError,
         /// AccountAddress conversion error.
