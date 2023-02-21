@@ -24,8 +24,8 @@
 #[macro_use]
 extern crate log;
 
-#[cfg(feature = "runtime-benchmarks")]
-extern crate serde_alt as serde;
+// #[cfg(feature = "runtime-benchmarks")]
+// extern crate serde_alt as serde;
 #[cfg(feature = "runtime-benchmarks")]
 extern crate bcs_alt as bcs;
 #[cfg(feature = "runtime-benchmarks")]
@@ -41,7 +41,12 @@ pub mod result;
 pub mod storage;
 pub mod types;
 pub mod weights;
-
+// pub mod info;
+// pub mod fn_call;
+// pub mod model;
+// pub mod move_types;
+// pub mod wrappers;
+// pub mod loader;
 #[frame_support::pallet]
 pub mod pallet {
     // Clippy didn't love sp- macros
@@ -54,6 +59,7 @@ pub mod pallet {
     use groupsign::utils::ensure_groupsign;
     use mvm::*;
     use weights::WeightInfo;
+    use types::MoveModuleId;
 
     use crate::storage::boxed::VmStorageBoxAdapter as StorageAdapter;
     use crate::balance::boxed::BalancesAdapter;
@@ -80,10 +86,12 @@ pub mod pallet {
     use move_vm::types::Transaction;
     use move_vm::types::VmResult;
     use move_vm::types::ModulePackage;
-
+    use move_vm::abi::{Field, Func, ModuleAbi, StructDef, Type, TypeAbilities};
+    use move_binary_format::CompiledModule;
     use move_core_types::account_address::AccountAddress;
     use move_core_types::language_storage::CORE_CODE_ADDRESS;
-
+    use move_core_types::language_storage::ModuleId as InternalModuleId;
+    use move_core_types::identifier::{IdentStr, Identifier};
     #[cfg(not(feature = "std"))]
     extern crate alloc;
     #[cfg(not(feature = "std"))]
@@ -176,9 +184,44 @@ pub mod pallet {
     where
         OriginFor<T>: Into<Result<groupsign::Origin<T>, OriginFor<T>>>,
     {
+        /// Execute Move script function.
+        ///
+        /// User can send his Move script function for execution by Move VM.
+        /// The gas limit should be provided.
+        #[pallet::weight(
+            <T as Config>::WeightInfo::execute().saturating_add(
+                T::GasWeightMapping::gas_to_weight(*gas_limit)
+            )
+        )]
+        pub fn execute_script_function(
+            origin: OriginFor<T>,
+            module_address: T::AccountId,
+            module_name: Vec<u8>,
+            ty_args: Vec<u8>,
+            args: Vec<u8>,
+            gas_limit: u64,
+        ) -> DispatchResultWithPostInfo {
+            let groupsign_origin = ensure_groupsign(origin.clone());
+            debug!("executing `publish module` with signed {:?},{:?},{:?},{:?},", module_address,module_name,ty_args,args);
+            let (signers, root) = match groupsign_origin {
+                // TODO: determine sudoer by groupsign signers
+                Ok(groupsign_signers) => (groupsign_signers.signers, false),
+                Err(_) => match T::UpdateOrigin::ensure_origin(origin.clone()) {
+                    Ok(_) => (vec![], true),
+                    Err(_) => (vec![ensure_signed(origin)?], false),
+                },
+            };
+
+            let vm_result = Self::raw_execute_script(&signers, args, gas_limit, root, false)?;
+
+            // produce result with spended gas:
+            let result = result::from_vm_result::<T>(vm_result)?;
+            Ok(result)
+        }
+
         /// Execute Move script.
         ///
-        /// User can send his Move script (compiled using 'dove tx' command) for execution by Move VM.
+        /// User can send his Move script (compiled using 'dove call' command) for execution by Move VM.
         /// The gas limit should be provided.
         #[pallet::weight(
             <T as Config>::WeightInfo::execute().saturating_add(
@@ -516,6 +559,35 @@ pub mod pallet {
             vm.get_module(module_id)
                 .map_err(|e| format!("error in get_module: {:?}", e).into())
         }
+        fn move_module_id_to_module_id(owner: &T::AccountId,module:Vec<u8>)->Result<Option<Vec<u8>>, Vec<u8>>{
+                Ok(Some(InternalModuleId::new(addr::account_to_account_address(&owner),Identifier::from_utf8(module).unwrap()).access_vector()))
+        }
+        fn get_abi(owner: &T::AccountId,module:Vec<u8>)->Result<Option<Vec<u8>>, Vec<u8>>{
+            let abi = ModuleAbi::from(CompiledModule::deserialize(&Self::get_module_abi_by_address_and_name(owner,module)?.unwrap()).unwrap());
+            ensure!(
+                !abi.funcs.is_empty(),
+                vec![]
+            );
+
+            debug!("abi result: {:?}", abi);
+            Ok(Some(vec![]))
+        }
+        pub fn get_module_abi_by_address_and_name(owner: &T::AccountId,module:Vec<u8>) -> Result<Option<Vec<u8>>, Vec<u8>> {
+            if let Ok(id)=Self::move_module_id_to_module_id(owner,module){
+                Self::get_module_abi(&id.unwrap())
+            }else{
+              Err(vec![])
+            }
+           
+        }
+
+        pub fn get_module_by_address_and_name(owner: &T::AccountId,module:Vec<u8>) -> Result<Option<Vec<u8>>, Vec<u8>> {
+                if let Ok(id)=Self::move_module_id_to_module_id(owner,module){
+                Self::get_module(&id.unwrap())
+            }else{
+              Err(vec![])
+            }       
+         }
 
         pub fn get_resource(
             account: &T::AccountId,
@@ -526,6 +598,9 @@ pub mod pallet {
             vm.get_resource(&AccountAddress::new(addr::account_to_bytes(account)), tag)
                 .map_err(|e| format!("error in get_resource: {:?}", e).into())
         }
+
+
+
     }
 
     /// Get storage adapter ready for the VM.

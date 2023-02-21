@@ -258,6 +258,7 @@ Add `--dev-service` flag to `cargo run` command to run a single node with disabl
 ```sh
 ./target/release/pontem --dev --dev-service --tmp
 ./target/debug/pontem --dev --dev-service --tmp
+./target/debug/pontem --dev --dev-service --tmp  --ws-external --rpc-external --unsafe-ws-external  --unsafe-rpc-external
 cargo run --  --dev --dev-service --tmp
 ```
 
@@ -295,3 +296,5 @@ Now you can use XCM.
 ## LICENSE
 
 See [LICENSE](/LICENSE).
+
+

@@ -109,6 +109,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "alt_serde_json"
+version = "1.0.61"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8f0eb8296bb24f54901cbb46b675ce2d4e6099a47eea0024cf0f48068c70313"
+dependencies = [
+ "alt_serde",
+ "itoa 0.4.8",
+ "ryu",
+]
+
+[[package]]
 name = "always-assert"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11121,6 +11132,7 @@ name = "sp-mvm"
 version = "0.3.2"
 dependencies = [
  "alt_serde",
+ "alt_serde_json",
  "anyhow",
  "assets",
  "bcs 0.1.3",
@@ -11132,8 +11144,10 @@ dependencies = [
  "frame-system",
  "getrandom 0.2.6",
  "groupsign",
+ "hex",
  "log",
  "module-currencies",
+ "move-binary-format",
  "move-core-types",
  "move-vm-runtime",
  "mvm",
@@ -11148,7 +11162,6 @@ dependencies = [
  "parity-scale-codec-derive 3.1.2",
  "primitives",
  "scale-info",
- "serde",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -11160,19 +11173,28 @@ dependencies = [
 name = "sp-mvm-rpc"
 version = "0.2.2"
 dependencies = [
+ "anyhow",
+ "bcs 0.1.3",
  "fc-rpc-core",
  "frame-support",
+ "frame-system",
+ "hex",
  "jsonrpc-core 18.0.0",
  "jsonrpc-core-client 18.0.0",
  "jsonrpc-derive 18.0.0",
+ "move-binary-format",
  "move-core-types",
+ "mvm",
  "parity-scale-codec 3.1.2",
  "serde",
+ "serde_json",
  "sp-api",
  "sp-blockchain",
+ "sp-core",
  "sp-mvm-rpc-runtime",
  "sp-rpc",
  "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
